@@ -11,8 +11,7 @@ services:
       - APP_PORT=8181
     restart: unless-stopped
     networks:
-      backend-ponpes:
-        driver: bridge
+      - backend-ponpes
 
   nginx:
     image: nginx:latest
