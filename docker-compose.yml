@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    image: backend-ponpes:v1
+    container_name: backend-ponpes
+    ports:
+      - "8181:8181"
+    environment:
+      - APP_ENV=production
+      - APP_PORT=8181
+    restart: unless-stopped
+    networks:
+      backend-ponpes:
+        driver: bridge
+
+  nginx:
+    image: nginx:latest
+    container_name: backend-ponpes-nginx
+    ports:
+      - "3021:3021"
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      backend-ponpes:
+        driver: bridge
+
+networks:
+  backend-ponpes:
+    driver: bridge
