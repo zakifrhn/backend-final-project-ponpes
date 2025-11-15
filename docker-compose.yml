@@ -22,9 +22,8 @@ services:
       - app
     restart: unless-stopped
     networks:
-      backend-ponpes:
-        driver: bridge
-
+      - backend-ponpes
+      
 networks:
   backend-ponpes:
     driver: bridge
