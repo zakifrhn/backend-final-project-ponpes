@@ -5,7 +5,7 @@ services:
     image: backend-ponpes:v1
     container_name: backend-ponpes
     ports:
-      - "8181:8181"
+      - "8181:8080"
     environment:
       - APP_ENV=production
       - APP_PORT=8181
