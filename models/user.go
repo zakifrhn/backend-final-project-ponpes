@@ -32,3 +32,14 @@ type LoginResponse struct {
 	Nama      string    `json:"nama"`
 	LastLogin time.Time `json:"last_login"`
 }
+
+type UserDTO struct {
+	ID         int    `json:"id_user"`
+	Username   string `json:"username"`
+	Password   string `json:"password,omitempty"`
+	Role       string `json:"role"`
+	IDSantri   *int   `json:"id_santri,omitempty"`
+	IDUstad    *int   `json:"id_ustad,omitempty"`
+	IDOrangTua *int   `json:"id_orang_tua,omitempty"`
+	IsActive   bool   `json:"is_active"`
+}

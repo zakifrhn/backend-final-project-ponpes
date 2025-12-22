@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHandler *handlers.UserHandler) {
+func RouteAuth(router *gin.Engine, authHandler *handlers.AuthHandler) {
 	public := router.Group("/api/v1")
 	{
 		public.POST("/login", authHandler.Login)
@@ -36,13 +36,6 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, userHand
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RoleMiddleware("admin"))
 		{
-			admin.POST("/users", userHandler.CreateUser)
-			// Add admin routes here
-		}
-
-		admin.Use(middleware.RoleMiddleware("admin"))
-		{
-			admin.PUT("/users", userHandler.UpdateUser)
 			// Add admin routes here
 		}
 
