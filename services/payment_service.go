@@ -484,7 +484,7 @@ func (s *paymentService) GetPaymentConfig() (map[string]interface{}, error) {
 		"midtrans_server_key": s.serverKey,
 		"midtrans_client_key": s.clientKey,
 		"is_production":       s.isProduction,
-		"webhook_url":         "http://127.0.0.1:8080/api/v1/payments/webhook",
+		"webhook_url":         "http://154.19.37.208:8181/api/v1/payments/webhook",
 	}
 	return config, nil
 }
