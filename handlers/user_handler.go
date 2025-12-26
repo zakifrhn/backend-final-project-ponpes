@@ -53,7 +53,6 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	message, err := h.userService.UpdatedUser(reqUser)
-	fmt.Println("id user %s", reqUser.ID)
 	fmt.Printf("message: %s", message)
 	if err != nil {
 		utils.SendError(c, http.StatusBadRequest, err.Error())
