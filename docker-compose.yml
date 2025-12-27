@@ -17,13 +17,13 @@ services:
     image: nginx:latest
     container_name: backend-ponpes-nginx
     ports:
-      - "3021:3021"
+      - "3021:80"
     depends_on:
       - app
     restart: unless-stopped
     networks:
       - backend-ponpes
-      
+
 networks:
   backend-ponpes:
     driver: bridge
