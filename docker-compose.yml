@@ -2,6 +2,9 @@ version: '3.8'
 
 services:
   app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: backend-ponpes:v1
     container_name: backend-ponpes
     ports:
