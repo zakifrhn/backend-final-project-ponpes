@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"backend-final-project-ponpes/models"
+	"backend-final-project-ponpes/utils"
 	"database/sql"
 )
 
@@ -45,6 +46,51 @@ func (r *UserRepository) FindByUsername(username string) (*models.User, error) {
 	if idOrangTua.Valid {
 		orangTuaID := int(idOrangTua.Int64)
 		user.IDOrangTua = &orangTuaID
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) FindByUserId(id int) (*models.User, error) {
+	query := `
+        SELECT id_user, username, password, role, id_santri, id_ustad, id_orang_tua, 
+               is_active, last_login, created_at, updated_at
+        FROM users 
+        WHERE id_user = $1 AND is_active = true
+    `
+
+	var user models.User
+	var idSantri, idUstad, idOrangTua sql.NullInt64
+
+	err := r.DB.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+		&user.Role,
+		&idSantri,
+		&idUstad,
+		&idOrangTua,
+		&user.IsActive,
+		&user.LastLogin,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if idSantri.Valid {
+		v := int(idSantri.Int64)
+		user.IDSantri = &v
+	}
+	if idUstad.Valid {
+		v := int(idUstad.Int64)
+		user.IDUstad = &v
+	}
+	if idOrangTua.Valid {
+		v := int(idOrangTua.Int64)
+		user.IDOrangTua = &v
 	}
 
 	return &user, nil
@@ -191,4 +237,107 @@ func (r *UserRepository) getAdminProfile(userID int) (interface{}, error) {
 	)
 
 	return admin, err
+}
+
+func (r *UserRepository) CreateUser(users *models.UserDTO) (string, error) {
+	// Implementation for creating a new user in the database
+
+	query := `
+		INSERT INTO users (username, password, role, id_santri, id_ustad, id_orang_tua, is_active, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+		returning id_user
+	`
+
+	var newID int
+
+	hashPassword, errors := utils.HashPassword(users.Password)
+	if errors != nil {
+		return "", errors
+	}
+
+	users.Password = hashPassword
+
+	err := r.DB.QueryRow(
+		query,
+		users.Username,
+		users.Password,
+		users.Role,
+		users.IDSantri,
+		users.IDUstad,
+		users.IDOrangTua,
+		users.IsActive,
+	).Scan(&newID)
+
+	if err != nil {
+		return "", err
+	}
+
+	users.ID = newID
+
+	return "user created successfully", nil
+
+}
+
+func (r *UserRepository) UpdateUser(users *models.UserDTO) (string, error) {
+	// Mulai transaksi
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return "", err
+	}
+
+	// Jika terjadi panic atau error → otomatis rollback
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	query := `
+        UPDATE users
+        SET
+            username      = COALESCE(NULLIF($1, ''), username),
+            password      = COALESCE(NULLIF($2, ''), password),
+            role          = COALESCE(NULLIF($3, ''), role),
+            id_santri     = COALESCE($4, id_santri),
+            id_ustad      = COALESCE($5, id_ustad),
+            id_orang_tua  = COALESCE($6, id_orang_tua),
+            is_active     = COALESCE($7, is_active),
+            updated_at    = NOW()
+        WHERE id_user = $8
+        RETURNING id_user
+    `
+
+	var updatedID int
+
+	hashPassword, errors := utils.HashPassword(users.Password)
+	if errors != nil {
+		return "", errors
+	}
+
+	users.Password = hashPassword
+
+	// Eksekusi query pakai tx.QueryRow
+	err = tx.QueryRow(
+		query,
+		users.Username,
+		users.Password,
+		users.Role,
+		users.IDSantri,
+		users.IDUstad,
+		users.IDOrangTua,
+		users.IsActive,
+		users.ID,
+	).Scan(&updatedID)
+
+	if err != nil {
+		tx.Rollback()
+		return "", err
+	}
+
+	// Commit kalau semua aman
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	return "user updated successfully", nil
 }

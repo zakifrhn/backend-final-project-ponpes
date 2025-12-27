@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/lib/pq v1.10.9
+	github.com/midtrans/midtrans-go v1.3.8
 	golang.org/x/crypto v0.14.0
 )
 

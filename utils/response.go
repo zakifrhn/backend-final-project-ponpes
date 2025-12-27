@@ -1,6 +1,8 @@
 package utils
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type Response struct {
 	Success int         `json:"success"`
@@ -22,5 +24,14 @@ func SendError(c *gin.Context, statusCode int, message string) {
 		Success: 400,
 		Message: message,
 		Error:   message,
+	})
+}
+
+func SendValidationError(c *gin.Context, errors map[string]string) {
+	c.JSON(400, Response{
+		Success: 400,
+		Message: "Validation error",
+		Error:   "Validation failed",
+		Data:    errors,
 	})
 }
