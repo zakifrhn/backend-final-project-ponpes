@@ -3,6 +3,7 @@ package repositories
 import (
 	"backend-final-project-ponpes/models"
 	"database/sql"
+	"fmt"
 )
 
 type SantriRepository interface {
@@ -20,80 +21,35 @@ func NewSantriRepository(db *sql.DB) SantriRepository {
 }
 
 func (r *santriRepository) GetSantriByID(id int) (*models.Santri, error) {
-	query := `SELECT 
-		id_santri, nis, nama_lengkap, nama_panggilan, tempat_lahir,
-		tanggal_lahir, jenis_kelamin, alamat_lengkap, provinsi, kabupaten,
-		kecamatan, desa, no_telepon, email, foto_path, status_aktif,
-		tanggal_masuk, tanggal_keluar
-	FROM md_biodata_santri 
-	WHERE id_santri = $1 AND deleted_at IS NULL`
-
 	var santri models.Santri
-	var (
-		namaPanggilan, tempatLahir, jenisKelamin, alamatLengkap,
-		provinsi, kabupaten, kecamatan, desa, noTelepon, email,
-		fotoPath sql.NullString
-		tanggalLahir, tanggalMasuk, tanggalKeluar sql.NullTime
-	)
+	var email, noTelepon sql.NullString
+
+	query := `SELECT id_santri, nama_lengkap, email, no_telepon, status_aktif
+              FROM md_biodata_santri 
+              WHERE id_santri = $1`
 
 	err := r.DB.QueryRow(query, id).Scan(
-		&santri.IDSantri, &santri.NIS, &santri.NamaLengkap,
-		&namaPanggilan, &tempatLahir, &tanggalLahir,
-		&jenisKelamin, &alamatLengkap, &provinsi,
-		&kabupaten, &kecamatan, &desa, &noTelepon,
-		&email, &fotoPath, &santri.StatusAktif,
-		&tanggalMasuk, &tanggalKeluar,
+		&santri.IDSantri,
+		&santri.NamaLengkap,
+		&email,
+		&noTelepon,
+		&santri.StatusAktif,
 	)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Santri not found, return nil without error
+			return nil, fmt.Errorf("santri dengan ID %d tidak ditemukan", id)
 		}
-		return nil, err
+		return nil, fmt.Errorf("gagal mengambil data santri: %v", err)
 	}
 
-	// Set nullable fields
-	if namaPanggilan.Valid {
-		santri.NamaPanggilan = &namaPanggilan.String
-	}
-	if tempatLahir.Valid {
-		santri.TempatLahir = &tempatLahir.String
-	}
-	if tanggalLahir.Valid {
-		santri.TanggalLahir = &tanggalLahir.Time
-	}
-	if jenisKelamin.Valid {
-		santri.JenisKelamin = &jenisKelamin.String
-	}
-	if alamatLengkap.Valid {
-		santri.AlamatLengkap = &alamatLengkap.String
-	}
-	if provinsi.Valid {
-		santri.Provinsi = &provinsi.String
-	}
-	if kabupaten.Valid {
-		santri.Kabupaten = &kabupaten.String
-	}
-	if kecamatan.Valid {
-		santri.Kecamatan = &kecamatan.String
-	}
-	if desa.Valid {
-		santri.Desa = &desa.String
-	}
-	if noTelepon.Valid {
-		santri.NoTelepon = &noTelepon.String
-	}
+	// Convert NullString to string pointer
 	if email.Valid {
 		santri.Email = &email.String
 	}
-	if fotoPath.Valid {
-		santri.FotoPath = &fotoPath.String
-	}
-	if tanggalMasuk.Valid {
-		santri.TanggalMasuk = &tanggalMasuk.Time
-	}
-	if tanggalKeluar.Valid {
-		santri.TanggalKeluar = &tanggalKeluar.Time
+
+	if noTelepon.Valid {
+		santri.NoTelepon = &noTelepon.String
 	}
 
 	return &santri, nil

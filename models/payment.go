@@ -18,7 +18,7 @@ type PaymentWebhookRequest struct {
 	OrderID           string  `json:"order_id"`
 	TransactionID     string  `json:"transaction_id"`
 	TransactionStatus string  `json:"transaction_status"`
-	GrossAmount       float64 `json:"gross_amount"`
+	GrossAmount       string `json:"gross_amount"`
 	PaymentType       string  `json:"payment_type"`
 	TransactionTime   string  `json:"transaction_time"`
 	FraudStatus       string  `json:"fraud_status"`

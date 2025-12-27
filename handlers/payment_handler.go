@@ -215,13 +215,12 @@ func (h *PaymentHandler) ValidatePayment(c *gin.Context) {
 	}
 
 	amountStr := c.Query("amount")
-	amount, err := strconv.ParseFloat(amountStr, 64)
 	if err != nil {
 		utils.SendError(c, http.StatusBadRequest, "Jumlah tidak valid")
 		return
 	}
 
-	isValid, err := h.paymentService.ValidatePaymentAmount(idInvoice, amount)
+	isValid, err := h.paymentService.ValidatePaymentAmount(idInvoice, amountStr)
 	if err != nil {
 		if err.Error() == "jumlah bayar harus sama dengan nominal tagihan" {
 			utils.SendError(c, http.StatusBadRequest, err.Error())

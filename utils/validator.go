@@ -14,7 +14,7 @@ func IsValidPhone(phone string) bool {
 	return phoneRegex.MatchString(phone)
 }
 
-func ValidatePaymentAmount(invoiceAmount, paymentAmount float64) (bool, string) {
+func ValidatePaymentAmount(invoiceAmount, paymentAmount string) (bool, string) {
 	if paymentAmount != invoiceAmount {
 		return false, "Jumlah bayar harus sama dengan nominal tagihan"
 	}

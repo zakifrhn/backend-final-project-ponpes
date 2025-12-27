@@ -12,7 +12,7 @@ type TransactionRepository interface {
 	GetTransactionByKode(kode string) (*models.Transaction, error)
 	GetTransactionByID(id int) (*models.Transaction, error)
 	UpdateTransactionStatus(kode, status, updatedBy string) error
-	UpdateTransactionFromWebhook(transactionID, status string, amount float64, midtransID, updatedBy string) error
+	UpdateTransactionFromWebhook(transactionID, status string, amount string, midtransID, updatedBy string) error
 	GetTransactionHistory(idSantri int) ([]models.TransactionDetail, error)
 	GetAllTransactions(status, startDate, endDate string) ([]models.TransactionDetail, error)
 	GetTransactionsByOrangTua(idOrangTua int) ([]models.TransactionDetail, error)
@@ -103,7 +103,7 @@ func (r *transactionRepository) UpdateTransactionStatus(kode, status, updatedBy 
 	return err
 }
 
-func (r *transactionRepository) UpdateTransactionFromWebhook(transactionID, status string, amount float64, midtransID, updatedBy string) error {
+func (r *transactionRepository) UpdateTransactionFromWebhook(transactionID, status string, amount string, midtransID, updatedBy string) error {
 	query := `UPDATE tr_transaksi_spp 
 		SET status = $1, jumlah_bayar = $2, transaction_date = $3,
 		    midtrans_transaction_id = $4, updated_by = $5, updated_date = $6

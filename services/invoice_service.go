@@ -54,11 +54,6 @@ func (s *invoiceService) CreateInvoice(req models.CreateInvoiceRequest, createdB
 		return 0, fmt.Errorf("format tanggal tidak valid: %v", err)
 	}
 
-	// Validasi nominal
-	if req.NominalTagihan <= 0 {
-		return 0, fmt.Errorf("nominal tagihan harus lebih dari 0")
-	}
-
 	// Validasi santri exists
 	invoice := &models.Invoice{
 		Deskripsi:       req.Deskripsi,
@@ -114,7 +109,7 @@ func (s *invoiceService) UpdateInvoice(id int, req map[string]interface{}, updat
 	}
 
 	// Update nominal jika ada
-	if nominal, ok := req["nominal_tagihan"].(float64); ok && nominal > 0 {
+	if nominal, ok := req["nominal_tagihan"].(string); ok && nominal > "0" {
 		invoice.NominalTagihan = nominal
 	} else {
 		invoice.NominalTagihan = currentInvoice.NominalTagihan
@@ -215,7 +210,7 @@ func (s *invoiceService) GenerateMonthlyInvoices(createdBy string) (int, error) 
 
 		// Buat deskripsi
 		deskripsi := fmt.Sprintf("SPP %s %d", monthName[currentMonth], currentYear)
-		nominal := 500000.0 // Default, bisa disesuaikan
+		nominal := "500000.0" // Default, bisa disesuaikan
 
 		invoice := &models.Invoice{
 			Deskripsi:       deskripsi,

@@ -5,8 +5,8 @@ import "time"
 type Transaction struct {
 	IDTransaksi           int        `db:"id_transaksi" json:"id_transaksi"`
 	IDInvoice             int        `db:"id_invoice" json:"id_invoice"`
-	NominalTagihan        float64    `db:"nominal_tagihan" json:"nominal_tagihan"`
-	JumlahBayar           float64    `db:"jumlah_bayar" json:"jumlah_bayar"`
+	NominalTagihan        string     `db:"nominal_tagihan" json:"nominal_tagihan"`
+	JumlahBayar           string     `db:"jumlah_bayar" json:"jumlah_bayar"`
 	TransactionDate       time.Time  `db:"transaction_date" json:"transaction_date"`
 	Status                string     `db:"status" json:"status"`
 	BuktiBayarPath        *string    `db:"bukti_bayar_path" json:"bukti_bayar_path,omitempty"`

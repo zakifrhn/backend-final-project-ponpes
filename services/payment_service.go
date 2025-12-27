@@ -20,7 +20,7 @@ type PaymentService interface {
 	GetTransactionHistory(idSantri int) ([]models.TransactionDetail, error)
 	GetAllTransactions(status, startDate, endDate string) ([]models.TransactionDetail, error)
 	GetTransactionsByOrangTua(idOrangTua int) ([]models.TransactionDetail, error)
-	ValidatePaymentAmount(invoiceID int, jumlahBayar float64) (bool, error)
+	ValidatePaymentAmount(invoiceID int, jumlahBayar string) (bool, error)
 	UpdateTransactionStatus(id int, status, updatedBy string) error
 	GetPaymentConfig() (map[string]interface{}, error)
 	UpdatePaymentConfig(serverKey, clientKey string, isProduction bool, updatedBy string) error
@@ -182,7 +182,7 @@ func (s *paymentService) createPaymentGatewayTransaction(trans *models.Transacti
 		return "", fmt.Errorf("server key tidak ditemukan")
 	}
 
-	if strings.Contains(s.serverKey, "your-server-key") || !strings.HasPrefix(s.serverKey, "SB-Mid-server-") {
+	if strings.Contains(s.serverKey, "SB-Mid-server-0M3ckIvV22lFcF1Gl25R-LXW") || !strings.HasPrefix(s.serverKey, "SB-Mid-server-") {
 		log.Printf("[MIDTRANS] WARNING: Server key mungkin tidak valid: %s...", s.serverKey[:20])
 	}
 
@@ -221,7 +221,7 @@ func (s *paymentService) createPaymentGatewayTransaction(trans *models.Transacti
 	payload := map[string]interface{}{
 		"transaction_details": map[string]interface{}{
 			"order_id":     trans.KodePembayaran,
-			"gross_amount": int64(invoice.NominalTagihan),
+			"gross_amount": invoice.NominalTagihan,
 		},
 		"customer_details": map[string]interface{}{
 			"first_name": santri.NamaLengkap,
@@ -231,7 +231,7 @@ func (s *paymentService) createPaymentGatewayTransaction(trans *models.Transacti
 		"item_details": []map[string]interface{}{
 			{
 				"id":       fmt.Sprintf("INV-%d", invoice.IDInvoice),
-				"price":    int64(invoice.NominalTagihan),
+				"price":    invoice.NominalTagihan,
 				"quantity": 1,
 				"name":     invoice.Deskripsi,
 			},
@@ -443,7 +443,7 @@ func (s *paymentService) GetTransactionsByOrangTua(idOrangTua int) ([]models.Tra
 	return s.transRepo.GetTransactionsByOrangTua(idOrangTua)
 }
 
-func (s *paymentService) ValidatePaymentAmount(invoiceID int, jumlahBayar float64) (bool, error) {
+func (s *paymentService) ValidatePaymentAmount(invoiceID int, jumlahBayar string) (bool, error) {
 	invoice, err := s.invoiceRepo.GetInvoiceByID(invoiceID)
 	if err != nil {
 		return false, err
@@ -484,7 +484,7 @@ func (s *paymentService) GetPaymentConfig() (map[string]interface{}, error) {
 		"midtrans_server_key": s.serverKey,
 		"midtrans_client_key": s.clientKey,
 		"is_production":       s.isProduction,
-		"webhook_url":         "http://154.19.37.208:8181/api/v1/payments/webhook",
+		"webhook_url":         "https://enormous-especially-sawfish.ngrok-free.app/api/v1/payment/webhook",
 	}
 	return config, nil
 }

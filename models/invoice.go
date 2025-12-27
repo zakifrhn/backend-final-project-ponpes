@@ -8,7 +8,7 @@ type Invoice struct {
 	DeadlineTagihan time.Time  `db:"deadline_tagihan" json:"deadline_tagihan"`
 	IDSantri        int        `db:"id_santri" json:"id_santri"`
 	IDOrangTua      *int       `db:"id_orang_tua" json:"id_orang_tua,omitempty"`
-	NominalTagihan  float64    `db:"nominal_tagihan" json:"nominal_tagihan"`
+	NominalTagihan  string     `db:"nominal_tagihan" json:"nominal_tagihan"`
 	Status          string     `db:"status" json:"status"`
 	CreatedDate     time.Time  `db:"created_date" json:"created_date"`
 	CreatedBy       *string    `db:"created_by" json:"created_by,omitempty"`
@@ -31,8 +31,8 @@ type InvoiceDetail struct {
 }
 
 type CreateInvoiceRequest struct {
-	Deskripsi       string  `json:"deskripsi" binding:"required"`
-	DeadlineTagihan string  `json:"deadline_tagihan" binding:"required"`
-	IDSantri        int     `json:"id_santri" binding:"required"`
-	NominalTagihan  float64 `json:"nominal_tagihan" binding:"required"`
+	Deskripsi       string `json:"deskripsi" binding:"required"`
+	DeadlineTagihan string `json:"deadline_tagihan" binding:"required"`
+	IDSantri        int    `json:"id_santri" binding:"required"`
+	NominalTagihan  string `json:"nominal_tagihan" binding:"required"`
 }
