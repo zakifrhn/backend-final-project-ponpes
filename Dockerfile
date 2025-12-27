@@ -35,4 +35,4 @@ COPY --from=builder /app/server .
 EXPOSE 8080
 
 # Jalankan aplikasi
-ENTRYPOINT ["./server"]
+ENTRYPOINT main.go

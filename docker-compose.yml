@@ -5,13 +5,13 @@ services:
     image: backend-ponpes:v1
     container_name: backend-ponpes
     ports:
-      - "8181:8080"
+      - "8181:8181"
     environment:
       - APP_ENV=production
       - APP_PORT=8181
     restart: unless-stopped
-    networks:
-      - backend-ponpes
+    backend-ponpes:
+        driver: bridge
 
   nginx:
     image: nginx:latest
@@ -21,8 +21,8 @@ services:
     depends_on:
       - app
     restart: unless-stopped
-    networks:
-      - backend-ponpes
+    backend-ponpes:
+        driver: bridge
       
 networks:
   backend-ponpes:
