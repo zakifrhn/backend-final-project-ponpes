@@ -10,20 +10,20 @@ services:
       - APP_ENV=production
       - APP_PORT=8181
     restart: unless-stopped
-    backend-ponpes:
-        driver: bridge
+    networks:
+      - backend-ponpes
 
   nginx:
     image: nginx:latest
     container_name: backend-ponpes-nginx
     ports:
-      - "3021:3021"
+      - "3021:80"
     depends_on:
       - app
     restart: unless-stopped
-    backend-ponpes:
-        driver: bridge
-      
+    networks:
+      - backend-ponpes
+
 networks:
   backend-ponpes:
     driver: bridge
