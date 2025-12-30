@@ -62,7 +62,7 @@ func SetupRoutes(router *gin.Engine,
 		ustad.Use(middleware.RoleMiddleware("ustad", "admin"))
 		{
 			// Invoice management untuk ustad
-			ustad.GET("/invoices", invoiceHandler.GetAllInvoices)
+			ustad.POST("/get-invoices", invoiceHandler.GetAllInvoices)
 			ustad.GET("/invoices/santri/:id_santri", invoiceHandler.GetInvoicesBySantri)
 			ustad.POST("/invoices", invoiceHandler.CreateInvoice)
 			ustad.PUT("/invoices/:id", invoiceHandler.UpdateInvoice)

@@ -4,13 +4,14 @@ import (
 	"backend-final-project-ponpes/models"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 )
 
 type InvoiceRepository interface {
 	GetInvoiceByID(id int) (*models.InvoiceDetail, error)
 	GetInvoicesBySantri(idSantri int) ([]models.InvoiceDetail, error)
-	GetAllInvoices(status, month, year string) ([]models.InvoiceDetail, error)
+	GetAllInvoices(start_date, end_date string) ([]models.InvoiceDetail, error)
 	CreateInvoice(invoice *models.Invoice) (int, error)
 	UpdateInvoice(invoice *models.Invoice) error
 	UpdateInvoiceStatus(id int, status, updatedBy string) error
@@ -120,56 +121,83 @@ func (r *invoiceRepository) GetInvoicesBySantri(idSantri int) ([]models.InvoiceD
 	return invoices, nil
 }
 
-func (r *invoiceRepository) GetAllInvoices(status, month, year string) ([]models.InvoiceDetail, error) {
-	query := `SELECT 
-		i.id_invoice, i.deskripsi, i.deadline_tagihan, 
-		i.id_santri, i.nominal_tagihan, i.status, i.created_date,
-		s.nis, s.nama_lengkap
-	FROM tr_invoice_spp i
-	INNER JOIN md_biodata_santri s ON i.id_santri = s.id_santri
-	WHERE i.deleted_date IS NULL`
+func (r *invoiceRepository) GetAllInvoices(startDate, endDate string) ([]models.InvoiceDetail, error) {
+	// Build query
+	const baseQuery = `
+        SELECT 
+            i.id_invoice, 
+            i.deskripsi, 
+            i.deadline_tagihan, 
+            i.id_santri, 
+            i.nominal_tagihan, 
+            i.status, 
+            i.created_date, 
+            i.updated_date,
+            s.nis,
+            s.nama_lengkap
+        FROM tr_invoice_spp i
+        INNER JOIN md_biodata_santri s ON i.id_santri = s.id_santri
+        WHERE i.deleted_date IS NULL
+    `
 
-	args := []interface{}{}
-	argIndex := 1
+	var conditions []string
+	var params []interface{}
 
-	if status != "" {
-		query += fmt.Sprintf(" AND i.status = $%d", argIndex)
-		args = append(args, status)
-		argIndex++
+	if startDate != "" {
+		conditions = append(conditions, "DATE(i.deadline_tagihan) >= ?")
+		params = append(params, startDate)
 	}
 
-	if month != "" {
-		query += fmt.Sprintf(" AND EXTRACT(MONTH FROM i.deadline_tagihan) = $%d", argIndex)
-		args = append(args, month)
-		argIndex++
+	if endDate != "" {
+		conditions = append(conditions, "DATE(i.deadline_tagihan) <= ?")
+		params = append(params, endDate)
 	}
 
-	if year != "" {
-		query += fmt.Sprintf(" AND EXTRACT(YEAR FROM i.deadline_tagihan) = $%d", argIndex)
-		args = append(args, year)
-		argIndex++
+	query := baseQuery
+	if len(conditions) > 0 {
+		query += " AND " + strings.Join(conditions, " AND ")
 	}
-
 	query += " ORDER BY i.deadline_tagihan DESC"
 
-	rows, err := r.DB.Query(query, args...)
+	// Execute query
+	rows, err := r.DB.Query(query, params...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer rows.Close()
 
+	// Process results
 	var invoices []models.InvoiceDetail
+
 	for rows.Next() {
 		var invoice models.InvoiceDetail
+		var updatedDate sql.NullTime
+
 		err := rows.Scan(
-			&invoice.IDInvoice, &invoice.Deskripsi, &invoice.DeadlineTagihan,
-			&invoice.IDSantri, &invoice.NominalTagihan, &invoice.Status,
-			&invoice.CreatedDate, &invoice.NIS, &invoice.NamaSantri,
+			&invoice.IDInvoice,
+			&invoice.Deskripsi,
+			&invoice.DeadlineTagihan,
+			&invoice.IDSantri,
+			&invoice.NominalTagihan,
+			&invoice.Status,
+			&invoice.CreatedDate,
+			&updatedDate,
+			&invoice.NIS,
+			&invoice.NamaSantri,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+
+		if updatedDate.Valid {
+			invoice.UpdatedDate = updatedDate.Time
+		}
+
 		invoices = append(invoices, invoice)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
 	return invoices, nil

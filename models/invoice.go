@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Invoice struct {
 	IDInvoice       int        `db:"id_invoice" json:"id_invoice"`
@@ -19,15 +21,28 @@ type Invoice struct {
 }
 
 type InvoiceDetail struct {
-	Invoice
-	NIS           string  `db:"nis" json:"nis"`
-	NamaSantri    string  `db:"nama_lengkap" json:"nama_santri"`
-	TeleponSantri *string `db:"no_telepon" json:"telepon_santri,omitempty"`
-	EmailSantri   *string `db:"email" json:"email_santri,omitempty"`
-	NamaAyah      *string `db:"nama_ayah" json:"nama_ayah,omitempty"`
-	NamaIbu       *string `db:"nama_ibu" json:"nama_ibu,omitempty"`
-	TeleponAyah   *string `db:"no_telepon_ayah" json:"telepon_ayah,omitempty"`
-	TeleponIbu    *string `db:"no_telepon_ibu" json:"telepon_ibu,omitempty"`
+	IDInvoice       int       `json:"id_invoice"`
+	Deskripsi       string    `json:"deskripsi"`
+	DeadlineTagihan time.Time `json:"deadline_tagihan"`
+	IDSantri        int       `json:"id_santri"`
+	IDOrangTua      *int      `json:"id_orang_tua,omitempty"`
+	NominalTagihan  string    `json:"nominal_tagihan"`
+	Status          string    `json:"status"`
+	CreatedDate     time.Time `json:"created_date"`
+	UpdatedDate     time.Time `json:"updated_date"`
+	CreatedBy       *string   `json:"created_by,omitempty"`
+
+	// Data santri
+	NIS           string  `json:"nis"`
+	NamaSantri    string  `json:"nama_santri"`
+	TeleponSantri *string `json:"telepon_santri,omitempty"`
+	EmailSantri   *string `json:"email_santri,omitempty"`
+
+	// Data orang tua (opsional)
+	NamaAyah    *string `json:"nama_ayah,omitempty"`
+	NamaIbu     *string `json:"nama_ibu,omitempty"`
+	TeleponAyah *string `json:"telepon_ayah,omitempty"`
+	TeleponIbu  *string `json:"telepon_ibu,omitempty"`
 }
 
 type CreateInvoiceRequest struct {
@@ -35,4 +50,9 @@ type CreateInvoiceRequest struct {
 	DeadlineTagihan string `json:"deadline_tagihan" binding:"required"`
 	IDSantri        int    `json:"id_santri" binding:"required"`
 	NominalTagihan  string `json:"nominal_tagihan" binding:"required"`
+}
+
+type GetAllInvoicesRequest struct {
+	StartDate string `json:"start_date" example:"2024-01-01"`
+	EndDate   string `json:"end_date" example:"2024-12-31"`
 }

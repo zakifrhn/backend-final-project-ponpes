@@ -11,7 +11,7 @@ import (
 type InvoiceService interface {
 	GetInvoiceByID(id int) (*models.InvoiceDetail, error)
 	GetInvoicesBySantri(idSantri int) ([]models.InvoiceDetail, error)
-	GetAllInvoices(status, month, year string) ([]models.InvoiceDetail, error)
+	GetAllInvoices(start_date, end_date string) ([]models.InvoiceDetail, error)
 	CreateInvoice(req models.CreateInvoiceRequest, createdBy string) (int, error)
 	UpdateInvoice(id int, req map[string]interface{}, updatedBy string) error
 	UpdateInvoiceStatus(id int, status, updatedBy string) error
@@ -43,10 +43,9 @@ func (s *invoiceService) GetInvoicesBySantri(idSantri int) ([]models.InvoiceDeta
 	return s.invoiceRepo.GetInvoicesBySantri(idSantri)
 }
 
-func (s *invoiceService) GetAllInvoices(status, month, year string) ([]models.InvoiceDetail, error) {
-	return s.invoiceRepo.GetAllInvoices(status, month, year)
+func (s *invoiceService) GetAllInvoices(startDate, endDate string) ([]models.InvoiceDetail, error) {
+	return s.invoiceRepo.GetAllInvoices(startDate, endDate)
 }
-
 func (s *invoiceService) CreateInvoice(req models.CreateInvoiceRequest, createdBy string) (int, error) {
 	// Parse deadline
 	deadline, err := time.Parse("2006-01-02", req.DeadlineTagihan)

@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
 	"backend-final-project-ponpes/models"
 	"backend-final-project-ponpes/services"
 	"backend-final-project-ponpes/utils"
+	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,18 +70,61 @@ func (h *InvoiceHandler) GetInvoiceDetail(c *gin.Context) {
 
 // GetAllInvoices untuk admin/ustad melihat semua invoice
 func (h *InvoiceHandler) GetAllInvoices(c *gin.Context) {
-	// Get query parameters
-	status := c.Query("status")
-	month := c.Query("month")
-	year := c.Query("year")
+	var req models.GetAllInvoicesRequest
 
-	invoices, err := h.invoiceService.GetAllInvoices(status, month, year)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.SendError(c, http.StatusBadRequest, "Format JSON tidak valid")
+		return
+	}
+
+	if req.StartDate != "" && !utils.IsValidDate(req.StartDate) {
+		utils.SendError(c, http.StatusBadRequest, "Format start_date harus YYYY-MM-DD")
+		return
+	}
+
+	if req.EndDate != "" && !utils.IsValidDate(req.EndDate) {
+		utils.SendError(c, http.StatusBadRequest, "Format end_date harus YYYY-MM-DD")
+		return
+	}
+
+	invoices, err := h.invoiceService.GetAllInvoices(req.StartDate, req.EndDate)
 	if err != nil {
 		utils.SendError(c, http.StatusInternalServerError, "Gagal mengambil data invoice")
 		return
 	}
 
-	utils.SendSuccess(c, "Data invoice berhasil diambil", invoices)
+	if len(invoices) == 0 {
+		utils.SendError(c, http.StatusNotFound, "Data invoice tidak ditemukan")
+		return
+	}
+
+	utils.SendSuccess(c, "Data invoice berhasil diambil", h.formatInvoices(invoices))
+}
+
+func (h *InvoiceHandler) formatInvoices(invoices []models.InvoiceDetail) []map[string]interface{} {
+	response := make([]map[string]interface{}, 0, len(invoices))
+
+	for _, inv := range invoices {
+		item := map[string]interface{}{
+			"id_invoice":       inv.IDInvoice,
+			"deskripsi":        inv.Deskripsi,
+			"deadline_tagihan": inv.DeadlineTagihan.Format("2006-01-02"),
+			"id_santri":        inv.IDSantri,
+			"nominal_tagihan":  inv.NominalTagihan,
+			"status":           inv.Status,
+			"created_date":     inv.CreatedDate.Format("2006-01-02"),
+			"nis":              inv.NIS,
+			"nama_santri":      inv.NamaSantri,
+		}
+
+		if !inv.UpdatedDate.IsZero() {
+			item["updated_date"] = inv.UpdatedDate.Format("2006-01-02")
+		}
+
+		response = append(response, item)
+	}
+
+	return response
 }
 
 // GetInvoicesBySantri untuk admin/ustad melihat invoice santri tertentu
@@ -239,7 +282,7 @@ func (h *InvoiceHandler) GenerateMonthlyInvoices(c *gin.Context) {
 		return
 	}
 
-	utils.SendSuccess(c, "Invoice bulanan berhasil digenerate", 
+	utils.SendSuccess(c, "Invoice bulanan berhasil digenerate",
 		gin.H{"total_invoices": count})
 }
 
